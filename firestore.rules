@@ -1,0 +1,94 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: userProfiles
+    // Document ID: {uid}
+    // Fields: uid, displayName, totalReach, reachGrowth, dailyCompletion, streakDays, focusScore
+    //
+    // Collection: channels
+    // Document ID: {channelId}
+    // Fields: uid, platform, handle, followers, growth, icon, color, bgColor, isNegative
+    //
+    // Collection: tasks
+    // Document ID: {taskId}
+    // Fields: uid, title, subtitle, streak, completed, isHighPriority, type, channelId
+    //
+    // Collection: activities
+    // Document ID: {activityId}
+    // Fields: uid, title, description, time, image
+    //
+    // ===============================================================
+
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.uid;
+    }
+
+    function isValidUserProfile(data) {
+      return data.uid == request.auth.uid &&
+             data.displayName is string &&
+             data.totalReach is string &&
+             data.reachGrowth is string;
+    }
+
+    function isValidChannel(data) {
+      return data.uid == request.auth.uid &&
+             data.platform is string &&
+             data.platform.size() < 50;
+    }
+
+    function isValidTask(data) {
+      return data.uid == request.auth.uid &&
+             data.title is string &&
+             data.title.size() < 100;
+    }
+
+    function isValidActivity(data) {
+      return data.uid == request.auth.uid &&
+             data.title is string;
+    }
+
+    // User Profiles
+    match /userProfiles/{uid} {
+      allow read: if isOwner(uid);
+      allow create: if isOwner(uid) && isValidUserProfile(request.resource.data);
+      allow update: if isOwner(uid) && isValidUserProfile(request.resource.data);
+    }
+
+    // Channels
+    match /channels/{channelId} {
+      allow read: if isDocOwner();
+      allow create: if isAuthenticated() && request.resource.data.uid == request.auth.uid && isValidChannel(request.resource.data);
+      allow update: if isDocOwner() && isValidChannel(request.resource.data);
+      allow delete: if isDocOwner();
+    }
+
+    // Tasks
+    match /tasks/{taskId} {
+      allow read: if isDocOwner();
+      allow create: if isAuthenticated() && request.resource.data.uid == request.auth.uid && isValidTask(request.resource.data);
+      allow update: if isDocOwner() && isValidTask(request.resource.data);
+      allow delete: if isDocOwner();
+    }
+
+    // Activities
+    match /activities/{activityId} {
+      allow read: if isDocOwner();
+      allow create: if isAuthenticated() && request.resource.data.uid == request.auth.uid && isValidActivity(request.resource.data);
+      allow update: if isDocOwner() && isValidActivity(request.resource.data);
+      allow delete: if isDocOwner();
+    }
+  }
+}

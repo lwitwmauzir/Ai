@@ -1,0 +1,83 @@
+{
+  "entities": {
+    "userProfile": {
+      "title": "User Profile",
+      "description": "Stores user-specific settings and aggregate metrics",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "totalReach": { "type": "string" },
+        "reachGrowth": { "type": "string" },
+        "dailyCompletion": { "type": "number" },
+        "streakDays": { "type": "number" },
+        "focusScore": { "type": "number" }
+      },
+      "required": ["uid"]
+    },
+    "channel": {
+      "title": "Social Channel",
+      "description": "A social media platform channel",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "platform": { "type": "string" },
+        "handle": { "type": "string" },
+        "followers": { "type": "string" },
+        "growth": { "type": "string" },
+        "icon": { "type": "string" },
+        "color": { "type": "string" },
+        "bgColor": { "type": "string" },
+        "isNegative": { "type": "boolean" }
+      },
+      "required": ["uid", "platform"]
+    },
+    "task": {
+      "title": "Task",
+      "description": "A recurring habit or one-off task",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "title": { "type": "string" },
+        "subtitle": { "type": "string" },
+        "streak": { "type": "number" },
+        "completed": { "type": "boolean" },
+        "isHighPriority": { "type": "boolean" },
+        "type": { "type": "string", "enum": ["habit", "channel-task"] },
+        "channelId": { "type": "string" }
+      },
+      "required": ["uid", "title"]
+    },
+    "activity": {
+      "title": "Recent Activity",
+      "description": "Log of recent events",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "time": { "type": "string" },
+        "image": { "type": "string" }
+      },
+      "required": ["uid", "title"]
+    }
+  },
+  "firestore": {
+    "/userProfiles/{uid}": {
+      "schema": "userProfile",
+      "description": "Individual user profiles"
+    },
+    "/channels/{channelId}": {
+      "schema": "channel",
+      "description": "Social channels across all users"
+    },
+    "/tasks/{taskId}": {
+      "schema": "task",
+      "description": "Tasks and habits"
+    },
+    "/activities/{activityId}": {
+      "schema": "activity",
+      "description": "Recent activity logs"
+    }
+  }
+}
